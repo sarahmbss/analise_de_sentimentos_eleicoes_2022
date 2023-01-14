@@ -41,6 +41,8 @@ Corpus.drop_duplicates(inplace=True)
 for i in range(len(Corpus['content'])):
     palavras = Corpus['content'][i].split()
     palavras = [x for x in palavras if "@" not in x]
+    # Remove palavras que representam risadas
+    palavras = [x for x in palavras if "kkk" not in x]
     entry = ' '.join(palavras)
     Corpus['content'][i] = entry
 
@@ -50,39 +52,36 @@ Corpus['content'] = [entry.lower() for entry in Corpus['content']]
 # Remove números e caracteres especiais
 Corpus['content'] = Corpus['content'].apply(lambda x: re.sub('[0-9]|,|\.|/|$|\(|\)|-|\+|:|•', ' ', x))
 
-# Remove acentos 
-Corpus['content'] = Corpus['content'].apply(lambda x: unidecode(x))
-
 # Remove @RT de retweets
 Corpus['content'] = [re.sub(r'^rt[\s]+', '', entry) for entry in Corpus['content']]
     
 # Remove hiperlinks
 Corpus['content'] = [re.sub(r'https?:\/\/.*[\r\n]*http', '', entry) for entry in Corpus['content']]
+Corpus['content'] = [re.sub(r'https', '', entry) for entry in Corpus['content']]
+Corpus['content'] = [re.sub(r'http', '', entry) for entry in Corpus['content']]
 
 # Remove enters
 Corpus['content'] = [re.sub(r'\n', '', entry) for entry in Corpus['content']]
-
-# Remove hiperlinks
-Corpus['content'] = [re.sub(r'https', '', entry) for entry in Corpus['content']]
-Corpus['content'] = [re.sub(r'http', '', entry) for entry in Corpus['content']]
 
 # Tokenização: Cada tweet é dividido em um array de palavras
 Corpus['content']= [word_tokenize(entry) for entry in Corpus['content']]
 
 # Remover stop-words e aplicar stemming
-# WordNetLemmatizer requires Pos tags to understand if the word is noun or verb or adjective etc. By default it is set to Noun
 tag_map = defaultdict(lambda : wn.NOUN)
 tag_map['J'] = wn.ADJ
 tag_map['V'] = wn.VERB
 tag_map['R'] = wn.ADV
 for index,entry in enumerate(Corpus['content']):
     Final_words = []
-    # Initializing WordNetLemmatizer()
-    word_Lemmatized = WordNetLemmatizer()
     for word, tag in pos_tag(entry):
-        # Below condition is to check for Stop words and consider only alphabets
-        if word not in stopwords.words('portuguese') and word.isalpha():
-            word_Final = word_Lemmatized.lemmatize(word,tag_map[tag[0]])
-            Final_words.append(word_Final)
+        # Verifica se a palavra não é stopword
+        if word not in stopwords and word.isalpha():
+            # Se a palavra estiver no dicionário de correção, ela é corrigida
+            if word in correcao:
+                word = correcao[word]
+            # Remove os acentos
+            word = unidecode(word)
+            # Faz o NLP
+            word_Final = [token.lemma_ for token in nlp(word)]
+            Final_words.extend(word_Final)
     Corpus.loc[index,'text_final'] = str(Final_words)
-print(Corpus['text_final'])
