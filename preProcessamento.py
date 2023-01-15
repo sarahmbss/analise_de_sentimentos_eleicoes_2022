@@ -66,7 +66,7 @@ Corpus['content'] = [re.sub(r'\n', '', entry) for entry in Corpus['content']]
 # Tokenização: Cada tweet é dividido em um array de palavras
 Corpus['content']= [word_tokenize(entry) for entry in Corpus['content']]
 
-# Remover stop-words e aplicar stemming
+# Remover stop-words e aplicar lematização
 tag_map = defaultdict(lambda : wn.NOUN)
 tag_map['J'] = wn.ADJ
 tag_map['V'] = wn.VERB
