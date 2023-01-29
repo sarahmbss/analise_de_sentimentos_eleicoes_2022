@@ -493,7 +493,7 @@ Test_YRecover = Encoder.inverse_transform(predictions_NBTest)
 df_felipe['previsao_NB'] = Test_YRecover
 
 # Classificador SVM
-SVM = svm.SVC(C=1.0, kernel='linear', degree=3, gamma='auto')
+SVM = svm.SVC()
 SVM.fit(Train_X_Tfidf,Train_Y)
 predictions = SVM.predict(Test_X_TfidfFelipe)
 predictions_recovered = Encoder.inverse_transform(predictions)
